@@ -52,9 +52,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerContainer}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>TRITNA</Text>
-            </View>
+            <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.title}>{t('welcome')}</Text>
             <Text style={styles.subtitle}>Enter your phone number to continue</Text>
           </View>
