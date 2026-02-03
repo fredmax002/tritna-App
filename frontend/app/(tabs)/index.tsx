@@ -6,20 +6,24 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useLanguage } from '../../src/context/LanguageContext';
-import { useWallet } from '../../src/context/WalletContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
+const logoImage = require('../../assets/images/logo.jpg');
 
 interface ServiceCard {
   id: string;
   title: string;
-  subtitle: string;
+  titleKrio: string;
+  description: string;
+  descriptionKrio: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   route: string;
@@ -27,13 +31,14 @@ interface ServiceCard {
 
 export default function HomeScreen() {
   const { t, isEnglish } = useLanguage();
-  const { balance } = useWallet();
 
   const services: ServiceCard[] = [
     {
       id: 'rayd',
       title: 'RAYD',
-      subtitle: t('rideDelivery'),
+      titleKrio: 'RAYD',
+      description: 'Ride & Delivery',
+      descriptionKrio: 'Ride & Delivery',
       icon: 'car',
       color: '#0B0F5B',
       route: '/(tabs)/rayd',
@@ -41,7 +46,9 @@ export default function HomeScreen() {
     {
       id: 'food',
       title: 'FOOD',
-      subtitle: t('foodOrdering'),
+      titleKrio: 'FOOD',
+      description: 'Food Ordering',
+      descriptionKrio: 'Fuud Odah',
       icon: 'restaurant',
       color: '#F97316',
       route: '/(tabs)/food',
@@ -49,282 +56,341 @@ export default function HomeScreen() {
     {
       id: 'enjoyment',
       title: 'ENJOYMENT',
-      subtitle: t('eventsNightlife'),
+      titleKrio: 'ENJOYMENT',
+      description: 'Events & Nightlife',
+      descriptionKrio: 'Event & Naytlayf',
       icon: 'musical-notes',
       color: '#8B5CF6',
-      route: '/(tabs)/rayd',
+      route: '/(tabs)/enjoyment',
     },
     {
       id: 'os',
       title: 'OS',
-      subtitle: t('housingRentals'),
+      titleKrio: 'OS',
+      description: 'Housing & Rentals',
+      descriptionKrio: 'Haws & Rent',
       icon: 'home',
       color: '#22C55E',
-      route: '/(tabs)/rayd',
+      route: '/(tabs)/os',
     },
     {
       id: 'makit',
       title: 'MAKIT',
-      subtitle: t('marketplace'),
+      titleKrio: 'MAKIT',
+      description: 'Buy & Sell',
+      descriptionKrio: 'Bai & Sel',
       icon: 'cart',
       color: '#EC4899',
-      route: '/(tabs)/rayd',
+      route: '/(tabs)/makit',
     },
   ];
 
-  const quickActions = [
-    { icon: 'add-circle', label: t('addMoney'), color: '#22C55E', route: '/(tabs)/wallet' },
-    { icon: 'send', label: t('sendMoney'), color: '#0B0F5B', route: '/(tabs)/wallet' },
-    { icon: 'time', label: t('transactionHistory'), color: '#F97316', route: '/(tabs)/wallet' },
-    { icon: 'card', label: t('paymentMethods'), color: '#8B5CF6', route: '/(tabs)/wallet' },
+  const stats = [
+    { value: '50K+', label: isEnglish ? 'Users' : 'Yuzas' },
+    { value: '5', label: isEnglish ? 'Services' : 'Savis' },
+    { value: '100K+', label: isEnglish ? 'Orders' : 'Odas' },
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <StatusBar style="light" />
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <SafeAreaView edges={['top']}>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Image source={logoImage} style={styles.logo} resizeMode="cover" />
+              </View>
+              <View style={styles.availableBadge}>
+                <View style={styles.availableDot} />
+                <Text style={styles.availableText}>
+                  {isEnglish ? 'Available in Sierra Leone' : 'Dey Naw foh Salone'}
+                </Text>
+              </View>
+            </View>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoText}>T</Text>
-            </View>
-            <View>
-              <Text style={styles.greeting}>
-                {isEnglish ? 'Good Morning!' : 'Gud Monin!'}
+            {/* Hero Content */}
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>
+                {isEnglish ? 'One App,' : 'Wan App,'}
               </Text>
-              <Text style={styles.userName}>John Doe</Text>
+              <Text style={styles.heroTitle}>
+                {isEnglish ? 'Everything' : 'Evri Tin'}
+              </Text>
+              <Text style={styles.heroSubtitle}>
+                {isEnglish
+                  ? 'TRITNA brings ride, food, events, housing, and marketplace together in one place.'
+                  : 'TRITNA dey bring ride, food, event, house, and market togeda for wan place.'}
+              </Text>
+
+              {/* CTA Button */}
+              <TouchableOpacity
+                style={styles.ctaButton}
+                onPress={() => router.push('/(tabs)/rayd')}
+              >
+                <Text style={styles.ctaButtonText}>
+                  {isEnglish ? 'Start Now' : 'Start Naw'}
+                </Text>
+                <Ionicons name="arrow-forward" size={20} color="#0B0F5B" />
+              </TouchableOpacity>
+
+              {/* Stats */}
+              <View style={styles.statsContainer}>
+                {stats.map((stat, index) => (
+                  <View key={index} style={styles.statItem}>
+                    <Text style={styles.statValue}>{stat.value}</Text>
+                    <Text style={styles.statLabel}>{stat.label}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Ionicons name="notifications" size={24} color="#FFFFFF" />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount}>3</Text>
-            </View>
-          </TouchableOpacity>
+          </SafeAreaView>
         </View>
 
-        {/* Wallet Card */}
-        <View style={styles.walletCard}>
-          <View>
-            <Text style={styles.walletLabel}>{t('walletBalance')}</Text>
-            <Text style={styles.walletBalance}>
-              SLE {balance.toLocaleString()}
+        {/* Services Section */}
+        <View style={styles.servicesSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {isEnglish ? 'Our Services' : 'Ɔl Savis'}
+            </Text>
+            <Text style={styles.sectionSubtitle}>
+              {isEnglish
+                ? 'Everything you need, all in one app'
+                : 'Evritin yu nid, ɔl foh wan app'}
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => router.push('/(tabs)/wallet')}>
-            <Ionicons name="add" size={24} color="#0B0F5B" />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
-          {quickActions.map((action, index) => (
-            <TouchableOpacity 
-              key={index} 
-              style={styles.quickActionButton}
-              onPress={() => router.push(action.route as any)}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}20` }]}>
-                <Ionicons name={action.icon as keyof typeof Ionicons.glyphMap} size={24} color={action.color} />
-              </View>
-              <Text style={styles.quickActionLabel}>{action.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Services */}
-        <View style={styles.servicesContainer}>
-          <Text style={styles.sectionTitle}>{t('services')}</Text>
+          {/* Services Grid */}
           <View style={styles.servicesGrid}>
             {services.map((service) => (
               <TouchableOpacity
                 key={service.id}
                 style={styles.serviceCard}
                 onPress={() => router.push(service.route as any)}
+                activeOpacity={0.7}
               >
-                <View style={[styles.serviceIcon, { backgroundColor: `${service.color}20` }]}>
-                  <Ionicons name={service.icon} size={32} color={service.color} />
+                <View style={[styles.serviceIcon, { backgroundColor: `${service.color}15` }]}>
+                  <Ionicons name={service.icon} size={28} color={service.color} />
                 </View>
-                <Text style={styles.serviceTitle}>{service.title}</Text>
-                <Text style={styles.serviceSubtitle}>{service.subtitle}</Text>
+                <Text style={styles.serviceTitle}>
+                  {isEnglish ? service.title : service.titleKrio}
+                </Text>
+                <Text style={styles.serviceDescription}>
+                  {isEnglish ? service.description : service.descriptionKrio}
+                </Text>
+                <View style={styles.serviceArrow}>
+                  <Text style={[styles.serviceExplore, { color: service.color }]}>
+                    {isEnglish ? 'Explore' : 'Luk'}
+                  </Text>
+                  <Ionicons name="arrow-forward" size={14} color={service.color} />
+                </View>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Recent Activity */}
-        <View style={styles.activityContainer}>
-          <View style={styles.activityHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/wallet')}>
-              <Text style={styles.seeAll}>See All</Text>
-            </TouchableOpacity>
+        {/* How It Works Section */}
+        <View style={styles.howItWorksSection}>
+          <Text style={styles.sectionTitle}>
+            {isEnglish ? 'How It Works' : 'Aw E Wok'}
+          </Text>
+          
+          <View style={styles.stepsContainer}>
+            {[
+              {
+                step: '1',
+                title: isEnglish ? 'Choose Service' : 'Pik Savis',
+                desc: isEnglish ? 'Select what you need' : 'Silekt wetin yu nid',
+                icon: 'apps',
+              },
+              {
+                step: '2',
+                title: isEnglish ? 'Place Order' : 'Put Oda',
+                desc: isEnglish ? 'Quick and easy' : 'Kwik an izi',
+                icon: 'checkmark-circle',
+              },
+              {
+                step: '3',
+                title: isEnglish ? 'Pay & Enjoy' : 'Pay & Enjoy',
+                desc: isEnglish ? 'Multiple payment options' : 'Plenti we foh pay',
+                icon: 'card',
+              },
+            ].map((item, index) => (
+              <View key={index} style={styles.stepItem}>
+                <View style={styles.stepNumber}>
+                  <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={24} color="#0B0F5B" />
+                </View>
+                <Text style={styles.stepTitle}>{item.title}</Text>
+                <Text style={styles.stepDesc}>{item.desc}</Text>
+              </View>
+            ))}
           </View>
-
-          {[
-            { title: 'Ride to Downtown', amount: -15000, date: 'Today', icon: 'car', color: '#0B0F5B' },
-            { title: 'Food Order', amount: -45000, date: 'Yesterday', icon: 'restaurant', color: '#F97316' },
-            { title: 'Wallet Top-up', amount: 100000, date: '2 days ago', icon: 'wallet', color: '#22C55E' },
-          ].map((activity, index) => (
-            <View key={index} style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: `${activity.color}20` }]}>
-                <Ionicons name={activity.icon as keyof typeof Ionicons.glyphMap} size={20} color={activity.color} />
-              </View>
-              <View style={styles.activityInfo}>
-                <Text style={styles.activityTitle}>{activity.title}</Text>
-                <Text style={styles.activityDate}>{activity.date}</Text>
-              </View>
-              <Text style={[
-                styles.activityAmount,
-                activity.amount > 0 ? styles.positiveAmount : styles.negativeAmount
-              ]}>
-                {activity.amount > 0 ? '+' : ''}SLE {Math.abs(activity.amount).toLocaleString()}
-              </Text>
-            </View>
-          ))}
         </View>
+
+        {/* Payment Methods */}
+        <View style={styles.paymentSection}>
+          <Text style={styles.paymentTitle}>
+            {isEnglish ? 'Pay Your Way' : 'Pay Yu We'}
+          </Text>
+          <Text style={styles.paymentSubtitle}>
+            {isEnglish
+              ? 'Multiple payment options for your convenience'
+              : 'Plenti we foh pay foh mek am izi foh yu'}
+          </Text>
+          <View style={styles.paymentMethods}>
+            {[
+              { name: 'Afrimoney', color: '#22C55E' },
+              { name: 'Orange Money', color: '#F97316' },
+              { name: 'Visa/Card', color: '#0B0F5B' },
+              { name: 'Cash', color: '#666666' },
+            ].map((method, index) => (
+              <View key={index} style={styles.paymentMethod}>
+                <View style={[styles.paymentIcon, { backgroundColor: `${method.color}20` }]}>
+                  <Ionicons
+                    name={method.name === 'Cash' ? 'cash' : method.name === 'Visa/Card' ? 'card' : 'phone-portrait'}
+                    size={20}
+                    color={method.color}
+                  />
+                </View>
+                <Text style={styles.paymentMethodText}>{method.name}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Bottom Spacing */}
+        <View style={{ height: 30 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
+  },
+  heroSection: {
+    backgroundColor: '#0B0F5B',
+    paddingBottom: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   header: {
-    backgroundColor: '#0B0F5B',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 12,
   },
-  logoBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0B0F5B',
-  },
-  greeting: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: 8,
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notificationCount: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  walletCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  walletLabel: {
-    fontSize: 12,
-    color: '#666666',
-    marginBottom: 4,
-  },
-  walletBalance: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#0B0F5B',
-  },
-  addButton: {
+  logoContainer: {
     width: 48,
     height: 48,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+  logo: {
+    width: '100%',
+    height: '100%',
   },
-  quickActionsContainer: {
+  availableBadge: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
+  },
+  availableDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#22C55E',
+  },
+  availableText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  heroContent: {
+    paddingHorizontal: 20,
+    paddingTop: 30,
+  },
+  heroTitle: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    lineHeight: 48,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: 24,
+    marginTop: 16,
     marginBottom: 24,
   },
-  quickActionButton: {
-    alignItems: 'center',
-    width: (width - 80) / 4,
-  },
-  quickActionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+  ctaButton: {
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+    alignSelf: 'flex-start',
+    gap: 10,
   },
-  quickActionLabel: {
-    fontSize: 11,
-    color: '#333333',
-    textAlign: 'center',
+  ctaButtonText: {
+    color: '#0B0F5B',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  servicesContainer: {
+  statsContainer: {
+    flexDirection: 'row',
+    marginTop: 32,
+    gap: 32,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
+  },
+  servicesSection: {
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  sectionHeader: {
+    alignItems: 'center',
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 16,
+    color: '#1F2937',
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
   },
   servicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 12,
   },
   serviceCard: {
@@ -332,12 +398,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 4,
   },
   serviceIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -345,66 +413,96 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333333',
+    color: '#1F2937',
     marginBottom: 4,
   },
-  serviceSubtitle: {
+  serviceDescription: {
     fontSize: 12,
-    color: '#666666',
-    textAlign: 'center',
+    color: '#6B7280',
+    marginBottom: 12,
   },
-  activityContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+  serviceArrow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  activityHeader: {
+  serviceExplore: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  howItWorksSection: {
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  stepsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  stepItem: {
+    flex: 1,
     alignItems: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 8,
   },
-  seeAll: {
-    fontSize: 14,
-    color: '#0B0F5B',
-    fontWeight: '500',
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  stepNumber: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#0B0F5B10',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginBottom: 12,
   },
-  activityInfo: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333333',
-  },
-  activityDate: {
-    fontSize: 12,
-    color: '#999999',
-    marginTop: 2,
-  },
-  activityAmount: {
+  stepTitle: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#1F2937',
+    textAlign: 'center',
   },
-  positiveAmount: {
-    color: '#22C55E',
+  stepDesc: {
+    fontSize: 11,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 4,
   },
-  negativeAmount: {
-    color: '#EF4444',
+  paymentSection: {
+    marginHorizontal: 20,
+    marginTop: 40,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 20,
+    padding: 24,
+  },
+  paymentTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    textAlign: 'center',
+  },
+  paymentSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  paymentMethods: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  paymentMethod: {
+    alignItems: 'center',
+  },
+  paymentIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  paymentMethodText: {
+    fontSize: 11,
+    color: '#4B5563',
+    fontWeight: '500',
   },
 });
