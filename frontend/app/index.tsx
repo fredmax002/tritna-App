@@ -197,6 +197,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 40,
   },
+  logoImage: {
+    width: 180,
+    height: 180,
+    marginBottom: 40,
+    borderRadius: 20,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
