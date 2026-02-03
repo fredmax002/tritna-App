@@ -9,12 +9,15 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { useAuth } from '../../src/context/AuthContext';
+
+const logoImage = require('../../assets/images/logo.jpg');
 
 export default function LoginScreen() {
   const { t } = useLanguage();
