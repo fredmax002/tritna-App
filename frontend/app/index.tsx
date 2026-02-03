@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   FlatList,
   Animated,
+  Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useLanguage } from '../src/context/LanguageContext';
+
+const logoImage = require('../assets/images/logo.jpg');
 
 const { width } = Dimensions.get('window');
 
