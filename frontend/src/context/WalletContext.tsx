@@ -1,229 +1,142 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { walletAPI } from '../services/api';
+import { useAuth } from './AuthContext';
 
-export type PaymentMethod = 'afrimoney' | 'orange_money' | 'visa' | 'cash';
+export type PaymentMethod = 'afrimoney' | 'orange_money' | 'visa' | 'cash' | 'wallet';
 
 export interface Transaction {
   id: string;
   type: 'credit' | 'debit';
   amount: number;
   description: string;
-  paymentMethod: PaymentMethod;
-  date: string;
-  status: 'completed' | 'pending' | 'failed';
+  payment_method: string;
+  status: string;
+  created_at: string;
 }
 
 interface WalletContextType {
   balance: number;
   transactions: Transaction[];
-  paymentMethods: PaymentMethod[];
   isLoading: boolean;
+  error: string | null;
   addMoney: (amount: number, method: PaymentMethod) => Promise<void>;
   withdraw: (amount: number, method: PaymentMethod) => Promise<void>;
   sendMoney: (amount: number, phone: string) => Promise<void>;
-  payForService: (amount: number, service: string) => Promise<void>;
-  addPaymentMethod: (method: PaymentMethod) => Promise<void>;
-  removePaymentMethod: (method: PaymentMethod) => Promise<void>;
-  refreshTransactions: () => Promise<void>;
+  refreshWallet: () => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-// Mock initial data
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'credit',
-    amount: 100000,
-    description: 'Wallet Top-up',
-    paymentMethod: 'afrimoney',
-    date: new Date().toISOString(),
-    status: 'completed',
-  },
-  {
-    id: '2',
-    type: 'debit',
-    amount: 15000,
-    description: 'TRITNA RAYD - Ride to Downtown',
-    paymentMethod: 'cash',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    status: 'completed',
-  },
-  {
-    id: '3',
-    type: 'debit',
-    amount: 45000,
-    description: "TRITNA FOOD - Order from Mama's Kitchen",
-    paymentMethod: 'orange_money',
-    date: new Date(Date.now() - 172800000).toISOString(),
-    status: 'completed',
-  },
-];
-
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [balance, setBalance] = useState(250000);
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(['afrimoney', 'orange_money', 'visa']);
+  const { user } = useAuth();
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshWallet = useCallback(async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const walletData = await walletAPI.getWallet(user.id);
+      setBalance(walletData.balance || 0);
+      setTransactions(walletData.transactions || []);
+    } catch (err: any) {
+      console.error('Error fetching wallet:', err);
+      setError(err.response?.data?.detail || 'Failed to load wallet');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
-    loadWalletData();
-  }, []);
-
-  const loadWalletData = async () => {
-    try {
-      const savedBalance = await AsyncStorage.getItem('tritna-balance');
-      const savedTransactions = await AsyncStorage.getItem('tritna-transactions');
-      
-      if (savedBalance) setBalance(parseInt(savedBalance, 10));
-      if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    } catch (error) {
-      console.error('Error loading wallet data:', error);
+    if (user?.id) {
+      refreshWallet();
     }
-  };
-
-  const saveWalletData = async (newBalance: number, newTransactions: Transaction[]) => {
-    try {
-      await AsyncStorage.setItem('tritna-balance', newBalance.toString());
-      await AsyncStorage.setItem('tritna-transactions', JSON.stringify(newTransactions));
-    } catch (error) {
-      console.error('Error saving wallet data:', error);
-    }
-  };
+  }, [user?.id, refreshWallet]);
 
   const addMoney = async (amount: number, method: PaymentMethod) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
-        type: 'credit',
-        amount,
-        description: 'Wallet Top-up',
-        paymentMethod: method,
-        date: new Date().toISOString(),
-        status: 'completed',
-      };
+    if (!user?.id) throw new Error('Not logged in');
 
-      const newBalance = balance + amount;
-      const newTransactions = [newTransaction, ...transactions];
-      
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-      await saveWalletData(newBalance, newTransactions);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await walletAPI.addMoney(user.id, {
+        amount,
+        payment_method: method,
+      });
+
+      if (result.success) {
+        setBalance(result.new_balance);
+        await refreshWallet(); // Refresh to get updated transactions
+      } else {
+        throw new Error(result.message || 'Failed to add money');
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to add money';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
   const withdraw = async (amount: number, method: PaymentMethod) => {
+    if (!user?.id) throw new Error('Not logged in');
+
     setIsLoading(true);
+    setError(null);
+
     try {
-      if (amount > balance) {
-        throw new Error('Insufficient balance');
-      }
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
-        type: 'debit',
+      const result = await walletAPI.withdraw(user.id, {
         amount,
-        description: 'Withdrawal',
-        paymentMethod: method,
-        date: new Date().toISOString(),
-        status: 'completed',
-      };
+        payment_method: method,
+      });
 
-      const newBalance = balance - amount;
-      const newTransactions = [newTransaction, ...transactions];
-      
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-      await saveWalletData(newBalance, newTransactions);
+      if (result.success) {
+        setBalance(result.new_balance);
+        await refreshWallet();
+      } else {
+        throw new Error(result.message || 'Failed to withdraw');
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to withdraw';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
   const sendMoney = async (amount: number, phone: string) => {
+    if (!user?.id) throw new Error('Not logged in');
+
     setIsLoading(true);
+    setError(null);
+
     try {
-      if (amount > balance) {
-        throw new Error('Insufficient balance');
-      }
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
-        type: 'debit',
+      const result = await walletAPI.sendMoney(user.id, {
         amount,
-        description: `Sent to ${phone}`,
-        paymentMethod: 'afrimoney',
-        date: new Date().toISOString(),
-        status: 'completed',
-      };
+        phone,
+      });
 
-      const newBalance = balance - amount;
-      const newTransactions = [newTransaction, ...transactions];
-      
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-      await saveWalletData(newBalance, newTransactions);
+      if (result.success) {
+        setBalance(result.new_balance);
+        await refreshWallet();
+      } else {
+        throw new Error(result.message || 'Failed to send money');
+      }
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to send money';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const payForService = async (amount: number, service: string) => {
-    setIsLoading(true);
-    try {
-      if (amount > balance) {
-        throw new Error('Insufficient balance');
-      }
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
-        type: 'debit',
-        amount,
-        description: service,
-        paymentMethod: 'afrimoney',
-        date: new Date().toISOString(),
-        status: 'completed',
-      };
-
-      const newBalance = balance - amount;
-      const newTransactions = [newTransaction, ...transactions];
-      
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-      await saveWalletData(newBalance, newTransactions);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addPaymentMethod = async (method: PaymentMethod) => {
-    if (!paymentMethods.includes(method)) {
-      setPaymentMethods([...paymentMethods, method]);
-    }
-  };
-
-  const removePaymentMethod = async (method: PaymentMethod) => {
-    setPaymentMethods(paymentMethods.filter(m => m !== method));
-  };
-
-  const refreshTransactions = async () => {
-    // In a real app, this would fetch from API
-    await new Promise(resolve => setTimeout(resolve, 500));
   };
 
   return (
@@ -231,15 +144,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       value={{
         balance,
         transactions,
-        paymentMethods,
         isLoading,
+        error,
         addMoney,
         withdraw,
         sendMoney,
-        payForService,
-        addPaymentMethod,
-        removePaymentMethod,
-        refreshTransactions,
+        refreshWallet,
       }}
     >
       {children}
