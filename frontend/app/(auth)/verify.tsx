@@ -71,21 +71,41 @@ export default function VerifyScreen() {
 
     setIsLoading(true);
     try {
-      // Verify OTP with optional registration data
+      // If we have first_name from params, it's a registration
+      // Otherwise, it's a login attempt
+      const userData = params.first_name ? {
+        first_name: params.first_name,
+        last_name: params.last_name,
+        email: params.email,
+      } : undefined;
+      
       await verifyOTP(
         params.phone || '',
         otpCode,
-        params.first_name ? {
-          first_name: params.first_name,
-          last_name: params.last_name,
-          email: params.email,
-        } : undefined
+        userData
       );
       
       // Navigate to main app
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Verification failed');
+      // If user doesn't exist and no registration data, redirect to register
+      if (error.message?.includes('First name is required')) {
+        Alert.alert(
+          'New User',
+          'This phone number is not registered. Please create an account.',
+          [
+            {
+              text: 'Register',
+              onPress: () => router.replace({
+                pathname: '/(auth)/register',
+                params: { phone: params.phone }
+              })
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', error.message || 'Verification failed');
+      }
     } finally {
       setIsLoading(false);
     }
