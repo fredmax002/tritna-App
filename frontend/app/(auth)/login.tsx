@@ -18,7 +18,7 @@ import { router } from 'expo-router';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { useAuth } from '../../src/context/AuthContext';
 
-const logoImage = require('../../assets/images/logo.png');
+const brandLogo = require('../../assets/images/brand-logo.jpg');
 
 export default function LoginScreen() {
   const { t } = useLanguage();
