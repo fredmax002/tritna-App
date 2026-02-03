@@ -59,9 +59,13 @@ export default function WelcomeScreen() {
 
   const renderItem = ({ item }: { item: OnboardingItem }) => (
     <View style={[styles.slide, { width }]}>
-      <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
-        <Ionicons name={item.icon} size={80} color={item.color} />
-      </View>
+      {currentIndex === 0 ? (
+        <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
+      ) : (
+        <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
+          <Ionicons name={item.icon} size={80} color={item.color} />
+        </View>
+      )}
       <Text style={styles.title}>{t(item.titleKey)}</Text>
       <Text style={styles.description}>{t(item.descKey)}</Text>
     </View>
