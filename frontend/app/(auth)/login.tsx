@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Alert,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,21 +18,39 @@ import { router } from 'expo-router';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { useAuth } from '../../src/context/AuthContext';
 
-const logoImage = require('../../assets/images/logo.jpg');
+const logoImage = require('../../assets/images/logo.png');
 
 export default function LoginScreen() {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const { sendOTP } = useAuth();
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleContinue = async () => {
-    if (phone.length < 8) return;
+    if (phone.length < 8) {
+      Alert.alert('Error', 'Please enter a valid phone number');
+      return;
+    }
     
     setIsLoading(true);
     try {
-      // In real app, send OTP here
-      router.push({ pathname: '/(auth)/verify', params: { phone } });
+      const result = await sendOTP(phone);
+      
+      if (result.success) {
+        // Navigate to verify screen with phone number
+        // In development, we pass the OTP for testing
+        router.push({ 
+          pathname: '/(auth)/verify', 
+          params: { 
+            phone,
+            devOtp: result.otp // Remove in production!
+          } 
+        });
+      } else {
+        Alert.alert('Error', result.message || 'Failed to send OTP');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send OTP');
     } finally {
       setIsLoading(false);
     }
@@ -70,13 +89,14 @@ export default function LoginScreen() {
               value={phone}
               onChangeText={setPhone}
               maxLength={10}
+              editable={!isLoading}
             />
           </View>
 
           <TouchableOpacity
             style={[
               styles.continueButton,
-              phone.length < 8 && styles.continueButtonDisabled,
+              (phone.length < 8 || isLoading) && styles.continueButtonDisabled,
             ]}
             onPress={handleContinue}
             disabled={phone.length < 8 || isLoading}
@@ -94,6 +114,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             style={styles.registerLink}
             onPress={() => router.push('/(auth)/register')}
+            disabled={isLoading}
           >
             <Text style={styles.registerText}>
               Don't have an account?{' '}
@@ -132,7 +153,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 24,
-    borderRadius: 20,
+    borderRadius: 50,
   },
   title: {
     fontSize: 28,
