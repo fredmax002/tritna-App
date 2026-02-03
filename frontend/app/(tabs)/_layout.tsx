@@ -21,7 +21,7 @@ export default function TabsLayout() {
           height: 65,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '500',
         },
       }}
@@ -31,7 +31,7 @@ export default function TabsLayout() {
         options={{
           tabBarLabel: t('home'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -40,7 +40,7 @@ export default function TabsLayout() {
         options={{
           tabBarLabel: t('rayd'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'car' : 'car-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'car' : 'car-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -49,7 +49,34 @@ export default function TabsLayout() {
         options={{
           tabBarLabel: t('food'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="enjoyment"
+        options={{
+          tabBarLabel: 'Events',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'musical-notes' : 'musical-notes-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="os"
+        options={{
+          tabBarLabel: 'Housing',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'business' : 'business-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="makit"
+        options={{
+          tabBarLabel: 'Market',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'cart' : 'cart-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -58,7 +85,7 @@ export default function TabsLayout() {
         options={{
           tabBarLabel: t('wallet'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -67,7 +94,7 @@ export default function TabsLayout() {
         options={{
           tabBarLabel: t('profile'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
           ),
         }}
       />
