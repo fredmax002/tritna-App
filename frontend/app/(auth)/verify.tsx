@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,12 +18,26 @@ import { useAuth } from '../../src/context/AuthContext';
 
 export default function VerifyScreen() {
   const { t } = useLanguage();
-  const { login, register } = useAuth();
-  const params = useLocalSearchParams<{ phone: string; firstName?: string; lastName?: string; email?: string }>();
+  const { sendOTP, verifyOTP } = useAuth();
+  const params = useLocalSearchParams<{ 
+    phone: string; 
+    first_name?: string; 
+    last_name?: string; 
+    email?: string;
+    devOtp?: string;
+  }>();
+  
   const [otp, setOtp] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const inputRefs = useRef<TextInput[]>([]);
+
+  // Show dev OTP hint in development
+  useEffect(() => {
+    if (params.devOtp) {
+      console.log('Development OTP:', params.devOtp);
+    }
+  }, [params.devOtp]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -49,33 +64,53 @@ export default function VerifyScreen() {
 
   const handleVerify = async () => {
     const otpCode = otp.join('');
-    if (otpCode.length !== 4) return;
+    if (otpCode.length !== 4) {
+      Alert.alert('Error', 'Please enter the complete 4-digit OTP');
+      return;
+    }
 
     setIsLoading(true);
     try {
-      if (params.firstName) {
-        // Registration flow
-        await register({
-          phone: params.phone || '',
-          firstName: params.firstName,
-          lastName: params.lastName || '',
+      // Verify OTP with optional registration data
+      await verifyOTP(
+        params.phone || '',
+        otpCode,
+        params.first_name ? {
+          first_name: params.first_name,
+          last_name: params.last_name,
           email: params.email,
-        });
-      } else {
-        // Login flow
-        await login(params.phone || '', otpCode);
-      }
+        } : undefined
+      );
+      
+      // Navigate to main app
       router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Verification failed:', error);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Verification failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResend = () => {
-    setCountdown(60);
-    // In real app, resend OTP here
+  const handleResend = async () => {
+    setIsLoading(true);
+    try {
+      const result = await sendOTP(params.phone || '');
+      if (result.success) {
+        setCountdown(60);
+        setOtp(['', '', '', '']);
+        Alert.alert('Success', 'OTP resent successfully');
+        // For development, log the new OTP
+        if (result.otp) {
+          console.log('New OTP:', result.otp);
+        }
+      } else {
+        Alert.alert('Error', result.message || 'Failed to resend OTP');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to resend OTP');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isOtpComplete = otp.every(digit => digit.length === 1);
@@ -98,6 +133,14 @@ export default function VerifyScreen() {
           </Text>
         </View>
 
+        {/* Dev OTP hint - remove in production */}
+        {params.devOtp && (
+          <View style={styles.devHint}>
+            <Ionicons name="information-circle" size={16} color="#F97316" />
+            <Text style={styles.devHintText}>Dev OTP: {params.devOtp}</Text>
+          </View>
+        )}
+
         <View style={styles.otpContainer}>
           {otp.map((digit, index) => (
             <TextInput
@@ -115,6 +158,7 @@ export default function VerifyScreen() {
               keyboardType="number-pad"
               maxLength={1}
               textAlign="center"
+              editable={!isLoading}
             />
           ))}
         </View>
@@ -122,7 +166,7 @@ export default function VerifyScreen() {
         <TouchableOpacity
           style={[
             styles.verifyButton,
-            !isOtpComplete && styles.verifyButtonDisabled,
+            (!isOtpComplete || isLoading) && styles.verifyButtonDisabled,
           ]}
           onPress={handleVerify}
           disabled={!isOtpComplete || isLoading}
@@ -140,7 +184,7 @@ export default function VerifyScreen() {
               Resend code in <Text style={styles.countdownText}>{countdown}s</Text>
             </Text>
           ) : (
-            <TouchableOpacity onPress={handleResend}>
+            <TouchableOpacity onPress={handleResend} disabled={isLoading}>
               <Text style={styles.resendLink}>Resend Code</Text>
             </TouchableOpacity>
           )}
@@ -166,7 +210,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginTop: 20,
-    marginBottom: 40,
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
@@ -182,6 +226,20 @@ const styles = StyleSheet.create({
   phone: {
     fontWeight: '600',
     color: '#333333',
+  },
+  devHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 24,
+    gap: 8,
+  },
+  devHintText: {
+    color: '#F97316',
+    fontSize: 14,
+    fontWeight: '500',
   },
   otpContainer: {
     flexDirection: 'row',
