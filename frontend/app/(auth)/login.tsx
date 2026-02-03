@@ -71,7 +71,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerContainer}>
-            <Image source={logoImage} style={styles.logoImage} resizeMode="contain" />
+            <Image source={brandLogo} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.title}>{t('welcome')}</Text>
             <Text style={styles.subtitle}>Enter your phone number to continue</Text>
           </View>
